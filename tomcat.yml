@@ -1,0 +1,34 @@
+---
+- hosts: amaz
+  remote_user: root
+  sudo: yes
+  serial: 1
+
+  tasks:
+  - name: Stop tomcat service
+    service: name=tomcat state=stopped enabled=yes
+
+  - name: Remove previous deployed WAR package
+    file:
+        state: absent
+        path: /opt/tomcat9/apache-tomcat-9.0.0.M17/webapps/iTrust.war
+
+  - name: Remove previous installed folder in Webapps
+    file:
+          state: absent
+          path: /opt/tomcat9/apache-tomcat-9.0.0.M17/webapps/iTrust
+
+  - name: Deploy iTrust (copy war package)
+    copy: src=/var/lib/jenkins/workspace/buildJob/iTrust/target/iTrust-23.0.0.war dest=/opt/tomcat9/apache-tomcat-9.0.0.M17/webapps/iTrust.war
+
+  - name: Restart tomcat service
+    service: name=tomcat state=started enabled=yes
+
+  - name: Rolling update completed 
+    pause:
+        seconds: 10
+
+
+##  - name: Maven deploy to tomcat
+##    become_user: root
+##    script: maven-deploy.sh
